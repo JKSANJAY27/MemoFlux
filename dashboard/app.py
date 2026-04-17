@@ -238,14 +238,25 @@ with tab1:
     env: MemorySimEnv = st.session_state.env
 
     # ── Top controls ──
-    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1, 1, 4])
+    ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1, 1, 1, 3])
     with ctrl_col1:
         step_btn = st.button("▶ Step", use_container_width=True)
     with ctrl_col2:
-        reset_btn = st.button("↺ Reset Episode", use_container_width=True)
+        reset_btn = st.button("↺ Reset", use_container_width=True)
     with ctrl_col3:
-        auto_play = st.checkbox("Auto-play", value=False)
-        speed = st.slider("Speed (steps/s)", 0.5, 5.0, 1.0, 0.5, label_visibility="collapsed") if auto_play else 1.0
+        n_steps = st.number_input("Run N steps", min_value=1, max_value=200,
+                                  value=10, step=5, label_visibility="collapsed")
+    with ctrl_col4:
+        run_n_btn = st.button(f"⏩ Run {n_steps} Steps", use_container_width=True)
+
+    st.markdown(
+        "<div style='color:#8B9DC3;font-size:0.72rem;margin-bottom:8px;'>"
+        "▶ <b>Step</b>: advance one event &nbsp;|&nbsp; "
+        "⏩ <b>Run N Steps</b>: batch-execute and see the result &nbsp;|&nbsp; "
+        "↺ <b>Reset</b>: start a fresh episode"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     if reset_btn:
         obs, _ = env.reset()
@@ -266,8 +277,15 @@ with tab1:
 
     last_info = {}
 
-    if step_btn or auto_play:
-        for _ in range(1):
+    # Number of steps to execute this render
+    steps_to_run = 0
+    if step_btn:
+        steps_to_run = 1
+    elif run_n_btn:
+        steps_to_run = int(n_steps)
+
+    if steps_to_run > 0:
+        for _ in range(steps_to_run):
             action = mgr.act(st.session_state.obs)
             obs, reward, term, trunc, info = env.step(action)
             st.session_state.obs = obs
@@ -290,13 +308,10 @@ with tab1:
             st.session_state.action_log = st.session_state.action_log[-30:]
 
             if term or trunc:
+                # Auto-reset so the next click continues into a new episode
                 obs, _ = env.reset()
                 st.session_state.obs = obs
                 break
-
-        if auto_play:
-            time.sleep(1 / speed)
-            st.rerun()
 
     # ── KPI Cards ──
     steps  = st.session_state.cum_steps

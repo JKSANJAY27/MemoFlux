@@ -71,10 +71,12 @@ def run_demo():
     # Run both managers side by side
     sessions = [DEMO_SCENARIO]
 
+    # Use galaxy_a34 (4 slots) — forces real eviction pressure so LRU vs AX differs
+    DEMO_DEVICE = "galaxy_a34"
     for manager_name, mgr_cls in [("Naive LRU (Current Android)", LRUMemoryManager),
                                     ("Samsung AX Memory",          StaticPriorityManager)]:
-        env = MemorySimEnv(sessions=sessions, device_profile="galaxy_s24")
-        n_slots = DEVICE_PROFILES["galaxy_s24"]["n_slots"]
+        env = MemorySimEnv(sessions=sessions, device_profile=DEMO_DEVICE)
+        n_slots = DEVICE_PROFILES[DEMO_DEVICE]["n_slots"]
         mgr = mgr_cls(n_slots=n_slots)
 
         obs, _ = env.reset()

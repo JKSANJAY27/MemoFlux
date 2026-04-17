@@ -3,17 +3,28 @@ import plotly.graph_objects as go
 from typing import Dict, List, Optional
 
 
+def _hex_to_rgba(hex_color: str, alpha: float = 0.15) -> str:
+    """Convert #RRGGBB hex to 'rgba(r,g,b,alpha)' for Plotly compatibility."""
+    h = hex_color.lstrip("#")
+    if len(h) == 6:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return f"rgba({r},{g},{b},{alpha})"
+    # Already rgba or named color — return as-is
+    return hex_color
+
+
 def make_kpi_chart(
     values: List[float],
     color: str = "#1428A0",
     title: str = "",
 ) -> go.Figure:
     """Mini sparkline chart for KPI trend."""
+    fill_color = _hex_to_rgba(color, alpha=0.15) if color.startswith("#") else color
     fig = go.Figure(go.Scatter(
         y=values, mode="lines",
         line=dict(color=color, width=2, shape="spline"),
         fill="tozeroy",
-        fillcolor=color.replace(")", ",0.15)").replace("rgb", "rgba") if "rgb" in color else f"{color}26",
+        fillcolor=fill_color,
     ))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",

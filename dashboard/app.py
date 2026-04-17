@@ -374,19 +374,55 @@ with tab1:
         st.plotly_chart(fig_gauge, use_container_width=True, config={"displayModeBar": False})
 
     with right:
-        # Top-5 predictions
+        # ── Week 2: Live Prediction Feed ───────────────────────
         st.markdown("#### 🎯 Next-App Predictions")
         if ax_mode:
-            preds = mock_predictions()
-            apps_p  = [p[0] for p in preds]
-            probs_p = [p[1] for p in preds]
-            fig_pred = make_prediction_bar(apps_p, probs_p)
-            st.plotly_chart(fig_pred, use_container_width=True, config={"displayModeBar": False})
-            st.markdown(
-                "<div style='color:#8B9DC3;font-size:0.7rem;'>⚙ Week 1: mock predictions · "
-                "LSTM predictor in Week 2</div>",
-                unsafe_allow_html=True,
-            )
+            # Use live predictions from env if available, else mock
+            live_preds = getattr(env, "_predictions", []) or []
+            if live_preds:
+                apps_p  = [p[0] for p in live_preds]
+                probs_p = [p[1] for p in live_preds]
+                st.markdown(
+                    "<div style='color:#00C3FF;font-size:0.7rem;margin-bottom:6px;'>"
+                    "⚡ LSTM predictor · Week 2 (ContextAwareLSTM)</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                apps_p  = [p[0] for p in mock_predictions()]
+                probs_p = [p[1] for p in mock_predictions() if True]
+                apps_p, probs_p = [p[0] for p in mock_predictions()], [p[1] for p in mock_predictions()]
+                st.markdown(
+                    "<div style='color:#8B9DC3;font-size:0.7rem;margin-bottom:6px;'>"
+                    "⚡ Week 1: mock predictions · run train_script to enable LSTM</div>",
+                    unsafe_allow_html=True,
+                )
+
+            # Progress-bar style prediction feed
+            for app_name, prob in zip(apps_p[:5], probs_p[:5]):
+                bar_col, pct_col = st.columns([4, 1])
+                bar_col.progress(
+                    min(float(prob), 1.0),
+                    text=f"📱 {app_name}",
+                )
+                pct_col.markdown(
+                    f"<div style='color:#00C3FF;font-weight:700;padding-top:4px;"  
+                    f"font-size:0.9rem;'>{prob:.0%}</div>",
+                    unsafe_allow_html=True,
+                )
+
+            # Prediction accuracy badge from last step
+            if last_info and last_info.get("predictor_top3"):
+                correct = last_info.get("prediction_was_correct", False)
+                conf    = last_info.get("predictor_confidence", 0.0)
+                st.markdown(
+                    f"<div style='background:{'#0d2b1d' if correct else '#2b0d0d'};"
+                    f"border:1px solid {'#00D68F' if correct else '#FF4757'};"
+                    f"border-radius:8px;padding:8px;margin-top:8px;font-size:0.8rem;'>"
+                    f"{'\u2713 Correct' if correct else '\u2717 Miss'} · "
+                    f"Confidence {conf:.0%} · "
+                    f"Top-3: {', '.join(last_info['predictor_top3'])}</div>",
+                    unsafe_allow_html=True,
+                )
         else:
             st.markdown(
                 "<div style='color:#4A5568;font-size:0.85rem;padding:40px 0;text-align:center;'>"
@@ -395,7 +431,7 @@ with tab1:
                 unsafe_allow_html=True,
             )
 
-        # Load time trend
+        # Load time trend sparkline
         st.markdown("#### 📈 Load Time Trend")
         if hist["load_times"]:
             fig_trend = make_kpi_chart(hist["load_times"][-50:], color="#1428A0", title="Load Time (ms)")
@@ -442,9 +478,101 @@ with tab2:
     st.markdown("### 📊 Baseline vs AX Memory — 7 KPI Comparison")
     st.markdown(
         "<p style='color:#8B9DC3;'>Based on 300-episode simulations on synthetic LSApp-matching sessions. "
-        "Week 2+3 will replace these projections with real LSTM+RL numbers.</p>",
+        "Week 2 LSTM predictor results load automatically when checkpoint is available.</p>",
         unsafe_allow_html=True,
     )
+
+    # ── Week 2: Model Card ─────────────────────────────────
+    ckpt_path    = Path(ROOT / "checkpoints" / "best_model.pt")
+    history_path = Path(ROOT / "checkpoints" / "training_history.json")
+    bench_path   = Path(ROOT / "exports"     / "benchmark_results.json")
+    results_path = Path(ROOT / "checkpoints" / "week2_results.json")
+
+    model_trained = ckpt_path.exists()
+
+    if model_trained:
+        st.markdown("#### 🧠 Week 2 Model Card (ContextAwareLSTM)")
+        # Load week2 results if available
+        w2 = {}
+        if results_path.exists():
+            with open(results_path) as f:
+                w2 = json.load(f)
+        benchmark = w2.get("benchmark", {})
+        fp32_bench = benchmark.get("fp32", {})
+        int8_bench = benchmark.get("int8", {})
+
+        mc_col1, mc_col2, mc_col3, mc_col4 = st.columns(4)
+        test_hr3    = w2.get("test_metrics", {}).get("hr3", 0)
+        params_n    = w2.get("params", 0)
+        p50_ms      = fp32_bench.get("latency_p50_ms") or int8_bench.get("latency_p50_ms", "?")
+        model_sz    = int8_bench.get("model_size_mb") or fp32_bench.get("model_size_mb", "?")
+
+        mc_col1.metric("HR@3 (Test)",        f"{test_hr3:.1%}",
+                       delta="PASS ✓" if test_hr3 >= 0.75 else f"{(test_hr3-0.75)*100:+.1f}pp vs target")
+        mc_col2.metric("Parameters",         f"{params_n/1e6:.2f}M",
+                       delta="< 2M ✓" if params_n < 2_000_000 else "over budget")
+        mc_col3.metric("ONNX Latency (p50)", f"{p50_ms}ms",
+                       delta="< 15ms ✓" if isinstance(p50_ms, (int,float)) and p50_ms < 15 else "")
+        mc_col4.metric("Model Size",         f"{model_sz}MB",
+                       delta="INT8 quantised")
+
+        st.markdown("<hr style='border-color:rgba(255,255,255,0.07);margin:12px 0;'>", unsafe_allow_html=True)
+
+        # ── Training Curves ─────────────────────────────────
+        if history_path.exists():
+            st.markdown("#### 📉 Training History")
+            with open(history_path) as f:
+                history = json.load(f)
+
+            fig_hist = go.Figure()
+            epochs = list(range(1, len(history["val_hr3"]) + 1))
+
+            fig_hist.add_trace(go.Scatter(
+                x=epochs, y=history["val_hr3"],
+                name="Val HR@3", mode="lines",
+                line=dict(color="#00C3FF", width=2.5),
+                fill="tozeroy",
+                fillcolor="rgba(0,195,255,0.08)",
+            ))
+            fig_hist.add_trace(go.Scatter(
+                x=epochs, y=history.get("val_hr1", []),
+                name="Val HR@1", mode="lines",
+                line=dict(color="#1428A0", width=1.5, dash="dot"),
+            ))
+            # 75% target line
+            fig_hist.add_hline(
+                y=0.75, line_dash="dash",
+                line_color="#FFD700", line_width=1.5,
+                annotation_text="75% Target",
+                annotation_position="top right",
+                annotation_font_color="#FFD700",
+            )
+            # Loss on secondary y-axis
+            fig_hist.add_trace(go.Scatter(
+                x=epochs, y=history.get("train_loss", []),
+                name="Train Loss", mode="lines",
+                line=dict(color="#FF4757", width=1, dash="dot"),
+                yaxis="y2",
+            ))
+            fig_hist.update_layout(
+                xaxis_title="Epoch",
+                yaxis=dict(title="HR@K", tickformat=".0%", gridcolor="#1a2235"),
+                yaxis2=dict(title="Loss", overlaying="y", side="right",
+                            showgrid=False, tickfont=dict(color="#FF4757")),
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#F0F4FF", family="Inter"),
+                legend=dict(font=dict(color="#8B9DC3"), bgcolor="rgba(0,0,0,0)"),
+                height=320, margin=dict(l=50, r=60, t=20, b=40),
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
+
+        st.markdown("<hr style='border-color:rgba(255,255,255,0.07);margin:12px 0;'>", unsafe_allow_html=True)
+    else:
+        st.info(
+            "💭 **Week 2 model not yet trained.** Run: `python -m predictor.train_script` "
+            "to train the ContextAwareLSTM predictor. The Model Card and Training Curves "
+            "will appear here automatically once the checkpoint exists."
+        )
 
     # Run benchmarks
     with st.spinner("Running baseline benchmarks (first time only)..."):
@@ -554,26 +682,36 @@ with tab2:
         fig_all.update_yaxes(tickfont=dict(color="#8B9DC3"), row=1, col=i, gridcolor="#1a2235")
     st.plotly_chart(fig_all, use_container_width=True)
 
-    # Training convergence placeholder
-    st.markdown("#### 📈 Training Convergence (Week 3 — RL Agent Placeholder)")
-    x_ep = list(range(0, 501, 10))
+    # Training convergence chart — real data if available, projected if not
+    st.markdown("#### 📈 Training Convergence")
+    x_ep   = list(range(0, 501, 10))
     y_base = [0.65] * len(x_ep)
-    y_rl   = [0.65 + (0.87 - 0.65) * (1 - np.exp(-ep / 200)) + np.random.normal(0, 0.01)
+    y_rl   = [0.65 + (0.87 - 0.65) * (1 - np.exp(-ep / 200)) + np.random.normal(0, 0.008)
               for ep in x_ep]
     fig_conv = go.Figure()
-    fig_conv.add_trace(go.Scatter(x=x_ep, y=y_base, name="LRU Baseline", line=dict(color="#4A5568", dash="dash", width=2)))
-    fig_conv.add_trace(go.Scatter(x=x_ep, y=y_rl,   name="RL Agent (projected)", line=dict(color="#00C3FF", width=2, shape="spline")))
+    fig_conv.add_trace(go.Scatter(x=x_ep, y=y_base, name="LRU Baseline",
+                                  line=dict(color="#4A5568", dash="dash", width=2)))
+    fig_conv.add_trace(go.Scatter(x=x_ep, y=y_rl,   name="RL Agent (projected, Week 3)",
+                                  line=dict(color="#6C63FF", width=2, shape="spline")))
+    if model_trained and history_path.exists():
+        fig_conv.add_trace(go.Scatter(
+            x=list(range(len(history["val_hr3"]))),
+            y=history["val_hr3"],
+            name="LSTM Predictor (Week 2, actual)",
+            line=dict(color="#00C3FF", width=2.5),
+            mode="lines+markers", marker=dict(size=4),
+        ))
+    fig_conv.add_hline(y=0.75, line_dash="dash", line_color="#FFD700",
+                       annotation_text="75% target",
+                       annotation_position="top right",
+                       annotation_font_color="#FFD700")
     fig_conv.update_layout(
-        xaxis_title="Training Episode", yaxis_title="Cache Hit Rate",
+        xaxis_title="Episode / Epoch", yaxis_title="Cache Hit Rate / HR@3",
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#F0F4FF", family="Inter"),
         legend=dict(font=dict(color="#8B9DC3"), bgcolor="rgba(0,0,0,0)"),
         yaxis=dict(gridcolor="#1a2235"), xaxis=dict(gridcolor="#1a2235"),
         height=300, margin=dict(l=40, r=20, t=20, b=40),
-        annotations=[dict(
-            x=450, y=0.88, text="AX Target: 85%+",
-            showarrow=False, font=dict(color="#00C3FF", size=11),
-        )],
     )
     st.plotly_chart(fig_conv, use_container_width=True)
 

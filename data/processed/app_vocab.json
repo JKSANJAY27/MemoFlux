@@ -1,0 +1,20 @@
+{
+  "Calendar": 1,
+  "Camera": 2,
+  "Chrome": 3,
+  "Contacts": 4,
+  "Facebook": 5,
+  "Gmail": 6,
+  "Instagram": 7,
+  "LinkedIn": 8,
+  "Maps": 9,
+  "Messages": 10,
+  "Phone": 11,
+  "Settings": 12,
+  "Snapchat": 13,
+  "Spotify": 14,
+  "TikTok": 15,
+  "Twitter": 16,
+  "WhatsApp": 17,
+  "YouTube": 18
+}

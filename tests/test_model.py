@@ -38,9 +38,9 @@ def batch():
 # ── Tests ─────────────────────────────────────────────────
 
 def test_model_output_shape(small_model, batch):
-    """Logits shape must be (batch, vocab_size)."""
+    """Logits shape must be (batch, vocab_size + 1)."""
     logits, _ = small_model(batch["app_ids"], batch["ctx_vecs"], batch["user_ids"])
-    assert logits.shape == (4, 50), f"Expected (4,50), got {logits.shape}"
+    assert logits.shape == (4, 51), f"Expected (4,51), got {logits.shape}"
 
 
 def test_model_parameter_count_under_2m():

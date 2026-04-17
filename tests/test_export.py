@@ -58,7 +58,7 @@ def test_onnx_output_shape(onnx_path):
     }
     out = sess.run(None, dummy)
     logits = out[0]
-    assert logits.shape == (1, 20), f"Expected (1,20), got {logits.shape}"
+    assert logits.shape == (1, 21), f"Expected (1,21), got {logits.shape}"
 
 
 def test_onnx_output_matches_pytorch(tiny_model, onnx_path):

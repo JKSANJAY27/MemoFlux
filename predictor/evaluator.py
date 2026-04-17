@@ -136,7 +136,7 @@ def print_evaluation_report(
 
         hr3 = test_metrics.get("hr3", 0)
         t.add_row("HR@1",       f"{test_metrics.get('hr1', 0):.1%}", "—",    "—")
-        t.add_row("HR@3",       f"{hr3:.1%}",                         "≥75%", "✓ PASS" if hr3 >= 0.75 else "✗ FAIL")
+        t.add_row("HR@3",       f"{hr3:.1%}",                         "≥75%", "PASS" if hr3 >= 0.75 else "FAIL")
         t.add_row("HR@5",       f"{test_metrics.get('hr5', 0):.1%}", "—",    "—")
         t.add_row("MRR@3",      f"{test_metrics.get('mrr3', 0):.4f}","—",    "—")
         t.add_row("N samples",  f"{test_metrics.get('n_samples',0):,}","—", "—")
@@ -148,7 +148,7 @@ def print_evaluation_report(
         if benchmark:
             t.add_section()
             t.add_row("ONNX p50 latency", f"{benchmark.get('latency_p50_ms','?')}ms", "< 15ms",
-                      "✓" if benchmark.get("passes_15ms_target") else "✗")
+                      "PASS" if benchmark.get("passes_15ms_target") else "FAIL")
             t.add_row("Model size",       f"{benchmark.get('model_size_mb','?')}MB",  "< 10MB", "—")
 
         console.print(t)

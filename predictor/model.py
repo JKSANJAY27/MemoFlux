@@ -97,7 +97,7 @@ class ContextAwareLSTM(nn.Module):
             nn.Linear(hidden_dim, hidden_dim // 2),
             nn.GELU(),
             nn.Dropout(dropout * 0.5),
-            nn.Linear(hidden_dim // 2, vocab_size),
+            nn.Linear(hidden_dim // 2, vocab_size + 1),
         )
 
         self._init_weights()

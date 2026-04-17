@@ -45,16 +45,16 @@ def load_all_sessions():
         loader = LSAppLoader()
         train_s, val_s, test_s = loader.load_splits()
         if len(train_s) > 0:
-            console.print(f"[green]✓[/green] LSApp loaded: "
+            console.print(f"[green]PASS[/green] LSApp loaded: "
                           f"{len(train_s)} train / {len(val_s)} val / {len(test_s)} test sessions")
             return train_s + val_s + test_s   # merge then re-split by user
     except Exception as e:
-        console.print(f"[yellow]⚠[/yellow] LSApp unavailable ({e}), using synthetic data")
+        console.print(f"[yellow]WARN[/yellow] LSApp unavailable ({e}), using synthetic data")
 
     from data_pipeline.synthetic_generator import SyntheticGenerator
     gen = SyntheticGenerator(n_users=200, days_per_user=30, seed=42)
     sessions = gen.generate_all()
-    console.print(f"[green]✓[/green] Synthetic: {len(sessions)} sessions generated")
+    console.print(f"[green]PASS[/green] Synthetic: {len(sessions)} sessions generated")
     return sessions
 
 
@@ -170,10 +170,10 @@ def main():
     console.print(Panel.fit(
         f"[bold green]Training Complete[/bold green]\n\n"
         f"  Best Val HR@3  : [cyan]{best_hr3:.1%}[/cyan]  "
-        f"{'✓ TARGET MET' if best_hr3 >= 0.75 else '— below 75% (add more epochs)'}\n"
+        f"{'PASS TARGET MET' if best_hr3 >= 0.75 else '— below 75% (add more epochs)'}\n"
         f"  Test HR@3      : [cyan]{test_metrics.get('hr3', 0):.1%}[/cyan]\n"
         f"  Parameters     : [cyan]{model.count_parameters():,}[/cyan]  "
-        f"{'✓' if model.count_parameters() < 2_000_000 else '✗'} (< 2M)\n"
+        f"{'PASS' if model.count_parameters() < 2_000_000 else 'FAIL'} (< 2M)\n"
         f"  Checkpoint     : checkpoints/best_model.pt\n"
         f"  History        : checkpoints/training_history.json",
         border_style="green",

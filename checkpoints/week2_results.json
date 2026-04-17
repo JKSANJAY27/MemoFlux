@@ -1,0 +1,41 @@
+{
+  "test_metrics": {
+    "hr1": 0.20215633511543274,
+    "hr3": 0.41239893436431885,
+    "hr5": 0.5714285969734192,
+    "mrr3": 0.2991913855075836,
+    "mrr5": 0.33517521619796753,
+    "n_samples": 371
+  },
+  "cold_metrics": {
+    "cold_hr1": 0.20215633511543274,
+    "cold_hr3": 0.41239893436431885,
+    "cold_hr5": 0.5714285969734192,
+    "cold_mrr3": 0.2991913855075836,
+    "n_samples": 371
+  },
+  "best_val_hr3": 0.3925,
+  "params": 384917,
+  "benchmark": {
+    "fp32": {
+      "model_path": "exports/ax_predictor.onnx",
+      "n_runs": 500,
+      "latency_p50_ms": 0.9,
+      "latency_p95_ms": 1.6,
+      "latency_p99_ms": 2.39,
+      "latency_mean_ms": 0.94,
+      "model_size_mb": 1.48,
+      "passes_15ms_target": true
+    },
+    "int8": {
+      "model_path": "exports/ax_predictor_int8.onnx",
+      "n_runs": 500,
+      "latency_p50_ms": 0.75,
+      "latency_p95_ms": 1.32,
+      "latency_p99_ms": 2.02,
+      "latency_mean_ms": 0.78,
+      "model_size_mb": 0.41,
+      "passes_15ms_target": true
+    }
+  }
+}

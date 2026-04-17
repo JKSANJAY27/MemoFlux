@@ -157,7 +157,7 @@ def train(
         if verbose and (epoch % 5 == 0 or epoch == 1 or val_m["hr3"] > best_hr3):
             line = (f"Ep {epoch:3d}/{n_epochs}  loss={train_loss:.4f}  "
                     f"HR@1={val_m['hr1']:.1%}  HR@3={val_m['hr3']:.1%}"
-                    f"{'  ← BEST ✓' if val_m['hr3'] > best_hr3 else ''}  "
+                    f"{'  <- BEST' if val_m['hr3'] > best_hr3 else ''}  "
                     f"({elapsed:.1f}s)")
             print(line)
 

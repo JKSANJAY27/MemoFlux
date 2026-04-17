@@ -48,9 +48,15 @@ def build_vocab(sessions: List[Dict], min_count: int = 5) -> Tuple[Dict, Dict]:
     user_ids: set = set()
 
     for sess in sessions:
-        uid = sess.get("user_id") or sess.get("user") or "anon"
+        if isinstance(sess, dict):
+            uid = sess.get("user_id") or sess.get("user") or "anon"
+            events = sess.get("events", [])
+        else:
+            uid = sess[0].get("user_id", "anon") if sess else "anon"
+            events = sess
+
         user_ids.add(uid)
-        for ev in sess:
+        for ev in events:
             app = ev.get("app") or ev.get("app_name", "UNKNOWN")
             app_counts[app] += 1
 

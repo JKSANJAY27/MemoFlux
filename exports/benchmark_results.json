@@ -1,0 +1,22 @@
+{
+  "fp32": {
+    "model_path": "exports/ax_predictor.onnx",
+    "n_runs": 500,
+    "latency_p50_ms": 0.9,
+    "latency_p95_ms": 1.6,
+    "latency_p99_ms": 2.39,
+    "latency_mean_ms": 0.94,
+    "model_size_mb": 1.48,
+    "passes_15ms_target": true
+  },
+  "int8": {
+    "model_path": "exports/ax_predictor_int8.onnx",
+    "n_runs": 500,
+    "latency_p50_ms": 0.75,
+    "latency_p95_ms": 1.32,
+    "latency_p99_ms": 2.02,
+    "latency_mean_ms": 0.78,
+    "model_size_mb": 0.41,
+    "passes_15ms_target": true
+  }
+}

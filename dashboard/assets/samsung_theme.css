@@ -1,0 +1,232 @@
+/* Samsung AX — Dashboard Theme
+   Primary: Samsung Blue #1428A0
+   Background: Deep Dark #0A0E1A
+   Card: #111827
+   Accent: #00C3FF (Samsung AI cyan)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ─── Root Variables ─────────────────────────── */
+:root {
+  --samsung-blue:    #1428A0;
+  --samsung-cyan:    #00C3FF;
+  --samsung-purple:  #6C63FF;
+  --bg-primary:      #0A0E1A;
+  --bg-card:         #111827;
+  --bg-card-hover:   #1a2235;
+  --text-primary:    #F0F4FF;
+  --text-secondary:  #8B9DC3;
+  --text-muted:      #4A5568;
+  --green:           #00D68F;
+  --red:             #FF4757;
+  --yellow:          #FFD700;
+  --border:          rgba(255,255,255,0.07);
+  --glow-blue:       0 0 20px rgba(20,40,160,0.4);
+  --glow-cyan:       0 0 20px rgba(0,195,255,0.3);
+}
+
+/* ─── Global Reset ───────────────────────────── */
+* { box-sizing: border-box; }
+
+html, body, .stApp {
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─── Sidebar ────────────────────────────────── */
+section[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #0D1225 0%, #060810 100%) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+section[data-testid="stSidebar"] * {
+  color: var(--text-primary) !important;
+}
+
+/* ─── Header / Top bar ───────────────────────── */
+header[data-testid="stHeader"] {
+  background: transparent !important;
+}
+
+/* ─── Cards ──────────────────────────────────── */
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card:hover {
+  border-color: var(--samsung-cyan);
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-2px);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--samsung-blue), var(--samsung-cyan));
+}
+
+.kpi-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--samsung-cyan), #7B9FFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.kpi-delta-up   { color: var(--green);  font-size: 0.75rem; }
+.kpi-delta-down { color: var(--red);    font-size: 0.75rem; }
+
+/* ─── Memory Map Grid ────────────────────────── */
+.memory-slot {
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid transparent;
+  cursor: default;
+  position: relative;
+}
+
+.memory-slot-empty    { background: #1a2235; color: var(--text-muted); border-color: var(--border); }
+.memory-slot-active   { background: linear-gradient(135deg,#1428A0,#2D4FD4); border-color: var(--samsung-cyan); box-shadow: var(--glow-cyan); color: #fff; animation: pulse-glow 2s infinite; }
+.memory-slot-bg       { background: linear-gradient(135deg,#1a3a5c,#0d2640); border-color: #2D6A9F; color: #87CEEB; }
+.memory-slot-preload  { background: linear-gradient(135deg,#2d1b69,#4a2d9e); border-color: var(--samsung-purple); color: #D8B4FE; animation: shimmer 1.5s infinite; }
+.memory-slot-evicted  { background: #1a0a0a; border-color: var(--red); color: var(--red); opacity: 0.6; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,195,255,0.4); }
+  50%       { box-shadow: 0 0 24px rgba(0,195,255,0.8); }
+}
+
+@keyframes shimmer {
+  0%   { opacity: 0.7; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.7; }
+}
+
+/* ─── Decision Log ───────────────────────────── */
+.log-entry {
+  background: var(--bg-card);
+  border-left: 3px solid var(--samsung-blue);
+  border-radius: 0 8px 8px 0;
+  padding: 8px 12px;
+  margin: 4px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.log-entry:hover  { border-left-color: var(--samsung-cyan); background: var(--bg-card-hover); }
+.log-preload      { border-left-color: var(--samsung-purple); }
+.log-evict        { border-left-color: var(--red); }
+.log-hit          { border-left-color: var(--green); }
+
+/* ─── Samsung AX Branding Badge ─────────────── */
+.ax-badge {
+  background: linear-gradient(135deg, var(--samsung-blue), #2D4FD4);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+/* ─── Buttons ────────────────────────────────── */
+.stButton > button {
+  background: linear-gradient(135deg, var(--samsung-blue), #2D6AE0) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 0.5rem 1.5rem !important;
+  transition: all 0.3s ease !important;
+  box-shadow: var(--glow-blue) !important;
+}
+
+.stButton > button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 30px rgba(20,40,160,0.6) !important;
+}
+
+/* ─── Selectbox / Inputs ─────────────────────── */
+.stSelectbox > div > div {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+}
+
+/* ─── Tabs ───────────────────────────────────── */
+.stTabs [data-baseweb="tab-list"] {
+  background: var(--bg-card) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background: linear-gradient(135deg, var(--samsung-blue), #2D4FD4) !important;
+  color: white !important;
+}
+
+/* ─── Metrics ────────────────────────────────── */
+[data-testid="stMetric"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+}
+
+[data-testid="stMetricValue"] { color: var(--samsung-cyan) !important; font-weight: 700 !important; }
+[data-testid="stMetricLabel"] { color: var(--text-secondary) !important; }
+[data-testid="stMetricDelta"]  { font-weight: 600 !important; }
+
+/* ─── Section Dividers ───────────────────────── */
+hr {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, var(--border), transparent) !important;
+  margin: 24px 0 !important;
+}
+
+/* ─── Plotly Charts Dark override ───────────── */
+.js-plotly-plot .plotly, .js-plotly-plot .plotly div {
+  background: transparent !important;
+}
+
+/* ─── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--samsung-blue); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--samsung-cyan); }
